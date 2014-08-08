@@ -1,0 +1,27 @@
+CXX=clang++
+CXXFLAGS=-std=c++11 -g -Wall -O2
+LXXFLAGS=-std=c++11
+
+
+
+OUTPUT=ml
+
+SOURCES=$(wildcard src/*.cpp)
+OBJECTS=$(SOURCES:src/%.cpp=obj/%.o)
+
+all: obj $(OUTPUT)
+
+
+obj:
+	mkdir -p obj
+
+obj/%.o: src/%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(OUTPUT): $(OBJECTS)
+	$(CXX) $(LXXFLAGS) -o $@ $(OBJECTS)
+
+clean:
+	rm -f $(OBJECTS) $(OUTPUT)
+
+rebuild: clean all
