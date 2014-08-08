@@ -1,0 +1,8 @@
+fn foo x =
+	if x == 0 then
+		0
+	else
+		foo (x - 1)
+
+fn main =
+	foo 431000
