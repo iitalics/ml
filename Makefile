@@ -1,6 +1,6 @@
 CXX=g++
-CXXFLAGS=-std=c++11 -Wall -O3
-LXXFLAGS=-std=c++11 -O3 -s
+CXXFLAGS=-std=c++11 -g -Wall -O2
+LXXFLAGS=-std=c++11
 
 
 

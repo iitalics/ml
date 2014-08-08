@@ -72,8 +72,6 @@ public:
 		{
 			if (!Environment::global()->get(cache_, var_))
 				cache_ = nullptr;
-			else
-				std::cout << "cache'd " << var_ << std::endl;
 		}
 	}
 
