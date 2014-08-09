@@ -1,7 +1,7 @@
 #pragma once
 
 
-//#define ML_USE_CUSTOM_ALLOCATOR
+#define ML_USE_CUSTOM_ALLOCATOR
 #define ML_DEBUG_ENABLED
 
 

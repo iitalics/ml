@@ -13,6 +13,8 @@ ValueAllocator::ValueAllocator ()
 {
 	for (int i = 0; i < NumValues; i++)
 		slab[i].allocator = nullptr;
+
+	MLdebug("created allocator");
 }
 
 
