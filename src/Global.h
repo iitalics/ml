@@ -1,11 +1,25 @@
 #pragma once
 
+
+//#define ML_USE_CUSTOM_ALLOCATOR
+#define ML_DEBUG_ENABLED
+
+
+
+
+
+
+
+
+
+
+
 #ifdef ML_DEBUG_ENABLED
 # include <iostream>
 # define MLdebug(X) \
 	std::cerr << "debug :: " << X << std::endl
 #else
-# define MLdebug(X) static_asset(false, "DEBUGGING NOT ALLOWED")
+# define MLdebug(X)
 #endif
 
 namespace ml {

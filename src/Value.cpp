@@ -4,22 +4,33 @@
 #include "Environment.h"
 #include "Error.h"
 #include "Expression.h"
-#include "left_vector.hpp"
+#include "ValueAllocator.h"
 #include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <memory>
+#include "left_vector.hpp"
 
 namespace ml {
 
 
 
-Value::Value (Type type_, Context* owner_)
-	: owner(owner_), type(type_)
-{
-}
+Value::Value (Type t, Context* ctx)
+	: type(t), owner(ctx)
+#ifdef ML_USE_CUSTOM_ALLOCATOR
+	  ,allocator(nullptr)
+#endif
+{ }
 
 Value::~Value ()
+{
+#ifdef ML_USE_CUSTOM_ALLOCATOR
+	if (allocator != nullptr)
+		destroy();
+#endif
+}
+
+void Value::destroy ()
 {
 	switch (type)
 	{
@@ -42,6 +53,16 @@ Value::~Value ()
 
 	default: break;
 	}
+
+#ifdef ML_USE_CUSTOM_ALLOCATOR
+	if (allocator)
+	{
+		allocator->destroyed(this);
+		allocator = nullptr;
+	}
+#else
+	delete this;
+#endif
 }
 
 
@@ -264,7 +285,7 @@ bool Value::partialEval (Value*& out, Context* ctx, Value* base, Error& err)
 				return false;
 			}
 		}
-		if (++gctimer > 1024)
+		if (++gctimer > 256)
 		{
 			gctimer = 0;
 			std::vector<Value*> keep(args.begin(), args.end());

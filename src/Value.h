@@ -5,6 +5,7 @@
 
 namespace ml {
 
+class ValueAllocator;
 class Context;
 class Environment;
 class Error;
@@ -20,7 +21,7 @@ struct LambdaFuncData
 
 struct Value
 {
-	typedef bool (*FuncHandler) (Value*&, Context*, Value** args, Error&);
+	typedef bool (*FuncHandler) (Value*&, Context*, Value**, Error&);
 
 	enum class Type
 	{
@@ -40,8 +41,9 @@ struct Value
 	};	
 	
 	
-	Value (Type type = Type::Void, Context* owner = nullptr);
+	Value (Type t = Type::Void, Context* ctx = nullptr);
 	~Value ();
+	void destroy ();
 
 	bool isType (Type t) const;
 
@@ -72,8 +74,11 @@ struct Value
 
 
 
-	Context* owner;
 	Type type;
+	Context* owner;
+#ifdef ML_USE_CUSTOM_ALLOCATOR
+	ValueAllocator* allocator;
+#endif
 	
 	union
 	{

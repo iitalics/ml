@@ -12,7 +12,7 @@ OBJECTS=$(SOURCES:src/%.cpp=obj/%.o)
 all: $(OUTPUT)
 
 
-obj/%.o: src/%.cpp
+obj/%.o: src/%.cpp src/Global.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OUTPUT): $(OBJECTS)

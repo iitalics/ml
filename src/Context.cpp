@@ -1,18 +1,38 @@
 #include <iostream>
 #include "Global.h"
 #include "Environment.h"
+#include "ValueAllocator.h"
+
 
 namespace ml {
 
 
+#ifdef ML_USE_CUSTOM_ALLOCATOR
+ValueAllocator* Context::allocator;
+#endif
 Value* Context::true_ = nullptr;
 Value* Context::false_ = nullptr;
 Value* Context::void_ = nullptr;
 
 
+#ifdef ML_USE_CUSTOM_ALLOCATOR
+# define CREATE_VALUE		allocator->alloc
+#else
+# define CREATE_VALUE		new Value
+#endif
+
+
 Context::Context (Value* parentEnv)
 {
-	envVal_ = new Value(Value::Type::Environment, this);
+#ifdef ML_USE_CUSTOM_ALLOCATOR
+	if (!allocator)
+	{
+		allocator = new ValueAllocator();
+		MLdebug("using custom allocator");
+	}
+#endif
+
+	envVal_ = CREATE_VALUE(Value::Type::Environment, this);
 	envVal_->env_ = new Environment(parentEnv);
 	take_(envVal_);
 }
@@ -33,7 +53,7 @@ int Context::purge ()
 	for (auto v : owned_)
 	{
 		p++;
-		delete v;
+		v->destroy();
 	}
 	owned_.clear();
 	return p;
@@ -43,22 +63,23 @@ int Context::purge ()
 
 
 
+
 Value* Context::makeInt (int_t t)
 {
-	auto v = new Value(Value::Type::Int, this);
+	auto v = CREATE_VALUE(Value::Type::Int, this);
 	v->int_.value = t;	
 	return take_(v);
 }
 Value* Context::makeReal (real_t t)
 {
-	auto v = new Value(Value::Type::Real, this);
+	auto v = CREATE_VALUE(Value::Type::Real, this);
 	v->real_.value = t;	
 	return take_(v);
 }
 Value* Context::makeFunction (const std::string& name, 
 				const std::vector<Value::Type>& types, Value::FuncHandler handler)
 {
-	auto v = new Value(Value::Type::NativeFunc, this);
+	auto v = CREATE_VALUE(Value::Type::NativeFunc, this);
 	int nargs = types.size();
 	v->native_ = {	nargs, 
 					handler,
@@ -70,7 +91,7 @@ Value* Context::makeFunction (const std::string& name,
 }
 Value* Context::makeFunction (const LambdaFuncData& data)
 {
-	auto v = new Value(Value::Type::LambdaFunc, this);
+	auto v = CREATE_VALUE(Value::Type::LambdaFunc, this);
 	v->lambda_ = new LambdaFuncData(data);
 	v->lambda_->env = envVal_;
 	return take_(v);
@@ -84,7 +105,7 @@ Value* Context::apply (Value* func, Value** args, int nargs)
 	if (nargs == 0)
 		return func;
 
-	auto v = new Value(Value::Type::PartialFunc, this);
+	auto v = CREATE_VALUE(Value::Type::PartialFunc, this);
 	v->partial_.base = func;
 	v->partial_.nargs = nargs;
 	v->partial_.args = new Value*[nargs];
@@ -98,7 +119,7 @@ Value* Context::makeTrue ()
 {
 	if (!true_)
 	{
-		true_ = new Value(Value::Type::Bool);
+		true_ = CREATE_VALUE(Value::Type::Bool);
 		true_->bool_ = true;
 	}
 	return true_;
@@ -107,7 +128,7 @@ Value* Context::makeFalse ()
 {
 	if (!false_)
 	{
-		false_ = new Value(Value::Type::Bool);
+		false_ = CREATE_VALUE(Value::Type::Bool);
 		false_->bool_ = false;
 	}
 	return false_;
@@ -115,7 +136,7 @@ Value* Context::makeFalse ()
 Value* Context::makeVoid ()
 {
 	if (!void_)
-		void_ = new Value(Value::Type::Void);
+		void_ = CREATE_VALUE(Value::Type::Void);
 
 	return void_;
 }

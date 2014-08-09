@@ -47,6 +47,9 @@ public:
 	inline Environment* env () { return envVal_->env_; }
 	inline Value* envValue () { return envVal_; }
 private:
+#ifdef ML_USE_CUSTOM_ALLOCATOR
+	static ValueAllocator* allocator;
+#endif
 	static Value* true_;
 	static Value* false_;
 	static Value* void_;
